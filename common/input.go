@@ -27,3 +27,13 @@ func FileToLines(path string) ([]string, error) {
 
 	return lines, nil
 }
+
+func FileToGrid(path string) (Grid, error) {
+	grid := make(Grid)
+	str, err := FileToString(path)
+	if err != nil {
+		return grid, err
+	}
+	grid.FillFromString(str)
+	return grid, nil
+}

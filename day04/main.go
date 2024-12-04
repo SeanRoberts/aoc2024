@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	input, err := common.FileToLines("./input.txt")
+	input, err := common.FileToGrid("./input.txt")
 	if err != nil {
 		panic("Couldn't read input file")
 	}

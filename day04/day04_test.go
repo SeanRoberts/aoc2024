@@ -7,7 +7,7 @@ import (
 )
 
 func TestPart1(t *testing.T) {
-	input, err := common.FileToLines("./input_test.txt")
+	input, err := common.FileToGrid("./input_test.txt")
 	if err != nil {
 		t.Error("Failed to read input file.")
 	}
@@ -18,7 +18,7 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-	input, err := common.FileToLines("./input_test.txt")
+	input, err := common.FileToGrid("./input_test.txt")
 	if err != nil {
 		t.Error("Failed to read input file.")
 	}

@@ -3,126 +3,94 @@ package main
 import (
 	"slices"
 	"strings"
+
+	"github.com/SeanRoberts/aoc2024/common"
 )
 
-func Part1(input []string) int {
+func Part1(grid common.Grid) int {
 	totalInstances := 0
-	graph := make([][]string, len(input))
-	for i, line := range input {
-		graph[i] = strings.Split(line, "")
-	}
-
-	for y, line := range graph {
-		for x, letter := range line {
-			if letter != "X" && letter != "S" {
-				continue
-			}
-
-			totalInstances += forwardXmas(graph, x, y)
-			totalInstances += verticalForwardXmas(graph, x, y)
-			totalInstances += seDiagonalXmas(graph, x, y)
-			totalInstances += swDiagonalXmas(graph, x, y)
+	for coords, letter := range grid {
+		if letter != "X" && letter != "S" {
+			continue
 		}
-	}
-	return totalInstances
-}
 
-func Part2(input []string) int {
-	totalInstances := 0
-	graph := make([][]string, len(input))
-	for i, line := range input {
-		graph[i] = strings.Split(line, "")
-	}
+		result := []bool{
+			forwardXmas(grid, coords),
+			downwardXmas(grid, coords),
+			diagonalXmas(grid, coords, 1),
+			diagonalXmas(grid, coords, -1),
+		}
 
-	for y, line := range graph {
-		for x, letter := range line {
-			if letter != "A" || y < 1 || x < 1 || y == len(graph)-1 || x == len(line)-1 {
-				continue
-			}
-
-			letters1 := make([]string, 3)
-			letters2 := make([]string, 3)
-			for i := -1; i < 2; i++ {
-				letters1[i+1] = graph[y+i][x+i]
-				letters2[i+1] = graph[y+i*-1][x+i]
-			}
-			slices.Sort(letters1)
-			slices.Sort(letters2)
-			if strings.Join(letters1, "") == "AMS" && strings.Join(letters2, "") == "AMS" {
+		for _, val := range result {
+			if val {
 				totalInstances++
 			}
 		}
 	}
+	return totalInstances
+}
+
+func Part2(grid common.Grid) int {
+	totalInstances := 0
+	for coords, letter := range grid {
+		if letter != "A" {
+			continue
+		}
+
+		tl := grid.RelativeValueAt(coords, -1, -1)
+		tr := grid.RelativeValueAt(coords, 1, -1)
+		bl := grid.RelativeValueAt(coords, -1, 1)
+		br := grid.RelativeValueAt(coords, 1, 1)
+
+		word1 := strings.Join([]string{tl, letter, br}, "")
+		word2 := strings.Join([]string{tr, letter, bl}, "")
+		if (word1 == "MAS" || word1 == "SAM") && (word2 == "MAS" || word2 == "SAM") {
+			totalInstances++
+		}
+	}
 
 	return totalInstances
 }
 
-func forwardXmas(graph [][]string, x int, y int) int {
-	line := graph[y]
-	if len(line) < x+4 {
-		return 0
+func forwardXmas(grid common.Grid, coords common.Coords) bool {
+	wanted := getWantedLetters(grid[coords])
+
+	for i := range wanted {
+		if grid.RelativeValueAt(coords, i, 0) != wanted[i] {
+			return false
+		}
 	}
 
-	word := strings.Join(line[x:x+4], "")
-	if word == "XMAS" || word == "SAMX" {
-		return 1
-	}
-
-	return 0
+	return true
 }
 
-func verticalForwardXmas(graph [][]string, x int, y int) int {
-	if len(graph) < y+4 {
-		return 0
+func downwardXmas(grid common.Grid, coords common.Coords) bool {
+	wanted := getWantedLetters(grid[coords])
+
+	for i := range wanted {
+		if grid.RelativeValueAt(coords, 0, i) != wanted[i] {
+			return false
+		}
 	}
 
-	letters := make([]string, 4)
-	for i := 0; i < 4; i++ {
-		letters[i] = graph[y+i][x]
-	}
-	word := strings.Join(letters, "")
-
-	if word == "XMAS" || word == "SAMX" {
-		return 1
-	}
-
-	return 0
+	return true
 }
 
-func seDiagonalXmas(graph [][]string, x int, y int) int {
-	if len(graph) < y+4 || len(graph[y]) < x+4 {
-		return 0
+func diagonalXmas(grid common.Grid, coords common.Coords, xMultiplier int) bool {
+	wanted := getWantedLetters(grid[coords])
+	for i := range wanted {
+		if grid.RelativeValueAt(coords, i*xMultiplier, i) != wanted[i] {
+			return false
+		}
 	}
 
-	letters := make([]string, 4)
-	for i := 0; i < 4; i++ {
-		letters[i] = graph[y+i][x+i]
-	}
-
-	word := strings.Join(letters, "")
-
-	if word == "XMAS" || word == "SAMX" {
-		return 1
-	}
-
-	return 0
+	return true
 }
 
-func swDiagonalXmas(graph [][]string, x int, y int) int {
-	if len(graph) < y+4 || x < 3 {
-		return 0
+func getWantedLetters(letter string) []string {
+	wanted := []string{"X", "M", "A", "S"}
+	if letter == "S" {
+		slices.Reverse(wanted)
 	}
-
-	letters := make([]string, 4)
-	for i := 0; i < 4; i++ {
-		letters[i] = graph[y+i][x-i]
-	}
-
-	word := strings.Join(letters, "")
-
-	if word == "XMAS" || word == "SAMX" {
-		return 1
-	}
-
-	return 0
+	return wanted
 }
